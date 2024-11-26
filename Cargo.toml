@@ -1,0 +1,8 @@
+[package]
+name = "satellite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+kiss3d = "0.35"
+winit = "0.28"
