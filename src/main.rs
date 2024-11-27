@@ -1,18 +1,14 @@
-use satellite::geometry;
-use satellite::camera;
 use satellite::renderer;
-use satellite::bodies;
+use satellite::solar_system::SolarSystem;
 
 fn main() {
     let mut renderer = renderer::Renderer::new();
+    let mut solar_system = SolarSystem::initialize_standard();
 
-    let sun = bodies::CelestialBody {
-        position: geometry::Vector3::new(0.0, 0.0, 0.0),
-        km_radius: 696_340.0,  // Sun's radius in km
-        color: [1.0, 1.0, 0.0],  // Yellow
-        name: String::from("Sun"),
-    };
+    for body in solar_system.get_bodies() {
+        renderer.add_body(body);
+    }
 
-    renderer.add_body(&sun);
-    renderer.render_loop();
+    // Start simulation
+    renderer.render_loop(&mut solar_system);
 }

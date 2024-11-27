@@ -14,8 +14,16 @@ impl Vector3 {
         Vector3::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 
+    pub fn subtract(&self, other: &Vector3) -> Vector3 {
+        Vector3::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
+
     pub fn scale(&self, scalar: f64) -> Vector3 {
         Vector3::new(self.x * scalar, self.y * scalar, self.z * scalar)
+    }
+
+    pub fn powi(&self, scalar: i32) -> Vector3 {
+        Vector3::new(self.x.powi(scalar), self.y.powi(scalar), self.z.powi(scalar))
     }
 
     pub fn cross(&self, other: &Vector3) -> Vector3 {
@@ -26,6 +34,10 @@ impl Vector3 {
 
     pub fn dot(&self, other: &Vector3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    pub fn magnitude(&self) -> f64 {
+        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
 
     pub fn norm(&self) -> Vector3 {

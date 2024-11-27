@@ -1,4 +1,5 @@
 pub mod geometry;
-pub mod camera;
 pub mod renderer;
-pub mod bodies;
+pub mod body;
+pub mod math;
+pub mod solar_system;
