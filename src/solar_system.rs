@@ -2,9 +2,21 @@ use crate::body::{self, BodyType};
 use crate::math;
 use crate::geometry;
 
+pub struct SimulationParameters {
+    pub time_multiplier: f64,
+}
+
+impl SimulationParameters {
+    pub fn new() -> Self {
+        SimulationParameters {
+            time_multiplier: 1.0
+        }
+    }
+}
+
 pub struct SolarSystem {
-    bodies: Vec<body::CelestialBody>,  // Own the bodies directly, no reference
-    timestep: f64
+    pub bodies: Vec<body::CelestialBody>, 
+    pub timestep: f64
 }
 
 impl SolarSystem {
