@@ -2,7 +2,7 @@ use kiss3d::window::Window;
 use kiss3d::light::Light;
 use kiss3d::scene::SceneNode;
 use kiss3d::camera::ArcBall;
-use kiss3d::nalgebra::{Point3, Translation3, Vector3};
+use kiss3d::nalgebra::{Point3, Translation3};
 use kiss3d::event::{Key, Action};
 use std::time::SystemTime;
 use crate::{solar_system, body::{self, BodyType}};

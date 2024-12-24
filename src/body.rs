@@ -1,5 +1,12 @@
 use crate::geometry;
 
+pub enum BodyType {
+    Star,
+    Planet,
+    Moon,
+    Satellite
+}
+
 pub struct CelestialBody {
     pub name: String,
     pub body_type: BodyType,
@@ -8,13 +15,6 @@ pub struct CelestialBody {
     pub mass: f64,
     pub velocity: geometry::Vector3,
     pub color: [f32; 3]
-}
-
-pub enum BodyType {
-    Star,
-    Planet,
-    Moon,
-    Satellite
 }
 
 impl CelestialBody {

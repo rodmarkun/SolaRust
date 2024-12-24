@@ -1,6 +1,7 @@
 use crate::body::{self, BodyType};
-use crate::math;
 use crate::geometry;
+use crate::integrators::{self, Integrator};
+use crate::physics;
 
 pub struct SimulationParameters {
     pub time_multiplier: f64,
@@ -16,14 +17,16 @@ impl SimulationParameters {
 
 pub struct SolarSystem {
     pub bodies: Vec<body::CelestialBody>, 
-    pub timestep: f64
+    pub timestep: f64,
+    integrator_type: integrators::IntegratorType,
 }
 
 impl SolarSystem {
-    pub fn new(timestep: f64) -> Self {
+    pub fn new(timestep: f64, integrator: integrators::IntegratorType) -> Self {
         SolarSystem {
             bodies: Vec::new(),
-            timestep
+            timestep,
+            integrator_type: integrator
         }
     }
 
@@ -32,32 +35,36 @@ impl SolarSystem {
     }
 
     pub fn update(&mut self) {
-        let num_bodies = self.bodies.len();
-        let mut forces: Vec<geometry::Vector3> = vec![geometry::Vector3::new(0.0, 0.0, 0.0); num_bodies];
+
+        let positions: Vec<geometry::Vector3> = self.bodies.iter()
+        .map(|body| body.position.clone())
+        .collect();
         
-        // Calculate forces between all bodies
-        for i in 0..num_bodies {
-            for j in 0..num_bodies {
-                if i != j {
-                    let body1 = &self.bodies[i];
-                    let body2 = &self.bodies[j];
-                    let force = math::calculate_force(
-                        body1.mass,
-                        body2.mass,
-                        body2.position.subtract(&body1.position)
-                    );
-                    forces[i] = forces[i].add(&force);
-                }
+        let velocities: Vec<geometry::Vector3> = self.bodies.iter()
+            .map(|body| body.velocity.clone())
+            .collect();
+            
+        let masses: Vec<f64> = self.bodies.iter()
+            .map(|body| body.mass)
+            .collect();
+            
+        let mut state = physics::State::new(positions, velocities, masses);
+
+        match self.integrator_type {
+            integrators::IntegratorType::Euler => {
+                integrators::EulerIntegrator.step(&mut state, self.timestep);
+            },
+            integrators::IntegratorType::RK4 => {
+                integrators::RK4Integrator.step(&mut state, self.timestep);
             }
         }
-
-        // Update all bodies with calculated forces
-        for i in 0..num_bodies {
-            let acc = math::calculate_acceleration(forces[i].clone(), self.bodies[i].mass);
-            let body = &mut self.bodies[i];
-            body.velocity = body.velocity.add(&acc.scale(self.timestep));
-            body.position = body.position.add(&body.velocity.scale(self.timestep));
+        
+        // Update our bodies with the new state
+        for (i, body) in self.bodies.iter_mut().enumerate() {
+            body.position = state.positions[i].clone();
+            body.velocity = state.velocities[i].clone();
         }
+
     }
 
     pub fn get_bodies(&self) -> &Vec<body::CelestialBody> {
@@ -65,7 +72,7 @@ impl SolarSystem {
     }
 
     pub fn initialize_standard() -> Self {
-        let mut system = SolarSystem::new(3600.0);  // 1 hour timestep
+        let mut system = SolarSystem::new(3600.0, integrators::IntegratorType::RK4);  // 1 hour timestep
 
         // Sun
         system.add_body(body::CelestialBody::new(
