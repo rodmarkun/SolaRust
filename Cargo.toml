@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 kiss3d = "0.35"
 winit = "0.28"
+rand = "0.8"

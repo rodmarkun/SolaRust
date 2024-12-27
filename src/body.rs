@@ -1,10 +1,11 @@
 use crate::geometry;
 
+#[derive(PartialEq)]
 pub enum BodyType {
     Star,
     Planet,
     Moon,
-    Satellite
+    Satellite,
 }
 
 pub struct CelestialBody {
