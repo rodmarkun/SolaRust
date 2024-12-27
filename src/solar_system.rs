@@ -54,8 +54,8 @@ impl SolarSystem {
             integrators::IntegratorType::Euler => {
                 integrators::EulerIntegrator.step(&mut state, self.timestep);
             },
-            integrators::IntegratorType::RK4 => {
-                integrators::RK4Integrator.step(&mut state, self.timestep);
+            integrators::IntegratorType::RK4(substeps) => {  // Extract the substeps parameter
+                integrators::RK4Integrator::new(substeps).step(&mut state, self.timestep);
             }
         }
         
@@ -72,7 +72,7 @@ impl SolarSystem {
     }
 
     pub fn initialize_standard() -> Self {
-        let mut system = SolarSystem::new(3600.0, integrators::IntegratorType::RK4);  // 1 hour timestep
+        let mut system = SolarSystem::new(3600.0, integrators::IntegratorType::RK4(30));  // 1 hour timestep
 
         // Sun
         system.add_body(body::CelestialBody::new(

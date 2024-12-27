@@ -1,9 +1,17 @@
 use crate::{geometry::Vector3, physics::{self}};
 
-pub struct RK4Integrator;
+pub struct RK4Integrator {
+    substeps: usize,
+}
 
-impl super::Integrator for RK4Integrator {
-    fn step(&self, state: &mut physics::State, timestep: f64) {
+impl RK4Integrator {
+    pub fn new(substeps: usize) -> Self {
+        RK4Integrator {
+            substeps: substeps.max(1)
+        }
+    }
+
+    fn single_step(&self, state: &mut physics::State, timestep: f64) {
         let num_bodies = state.positions.len();
 
         let d1 = calculate_derivatives(state);
@@ -34,6 +42,16 @@ impl super::Integrator for RK4Integrator {
             
             state.positions[i] = state.positions[i].add(&final_velocity);
             state.velocities[i] = state.velocities[i].add(&final_acceleration);
+        }
+    }
+}
+
+impl super::Integrator for RK4Integrator {
+    fn step(&self, state: &mut physics::State, timestep: f64) {
+        let substep_size = timestep / self.substeps as f64;
+        
+        for _ in 0..self.substeps {
+            self.single_step(state, substep_size);
         }
     }
 }

@@ -2,7 +2,7 @@ use crate::physics;
 
 pub enum IntegratorType {
     Euler,
-    RK4,
+    RK4(usize),
 }
 
 pub trait Integrator {

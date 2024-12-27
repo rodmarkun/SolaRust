@@ -1,5 +1,6 @@
 use crate::geometry::Vector3;
 
+#[derive(Clone)]
 pub struct State {
     pub positions: Vec<Vector3>,
     pub velocities: Vec<Vector3>,

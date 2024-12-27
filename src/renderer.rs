@@ -30,6 +30,7 @@ pub struct Renderer {
     bodies: Vec<BodyVisuals>,
     starfield: Starfield,
     max_trail_length: usize,
+    trail_interpolation_points: usize,
 }
 
 impl Renderer {
@@ -57,7 +58,8 @@ impl Renderer {
             window: Window::new("Solar System"),
             bodies: Vec::new(),
             starfield: Starfield { stars, brightness },
-            max_trail_length: 1000,
+            max_trail_length: 3000,
+            trail_interpolation_points: 30,
         }
     }
 
@@ -272,20 +274,46 @@ impl Renderer {
                         atmosphere.set_local_translation(Translation3::from(point.coords));
                         atmosphere.set_local_rotation(rotation);
                         
-                        // Pulse atmosphere slightly
                         let atm_pulse = (time + body.position.magnitude() as f32).sin() * 0.02 + 1.0;
                         atmosphere.set_local_scale(atm_pulse, atm_pulse, atm_pulse);
                     }
                     
-                    // Update trail
-                    visuals.trail.push(point);
-                    if visuals.trail.len() > self.max_trail_length {
-                        visuals.trail.remove(0);
+                    // Handle trail points
+                    if visuals.trail.is_empty() {
+                        // If trail is empty, add the first point
+                        visuals.trail.push(point);
+                    } else {
+                        let last_point = *visuals.trail.last().unwrap();
+                        
+                        // Calculate velocity-based interpolation points
+                        let velocity_magnitude = (point - last_point).norm();
+                        let adaptive_points = ((self.trail_interpolation_points as f32 * velocity_magnitude.min(2.0)) as usize).max(1);
+                        
+                        // Create interpolated points
+                        let mut new_points = Vec::new();
+                        for i in 1..=adaptive_points {
+                            let t = i as f32 / adaptive_points as f32;
+                            let interpolated_point = Point3::new(
+                                last_point.x + (point.x - last_point.x) * t,
+                                last_point.y + (point.y - last_point.y) * t,
+                                last_point.z + (point.z - last_point.z) * t
+                            );
+                            new_points.push(interpolated_point);
+                        }
+                        
+                        // Add new points to trail
+                        visuals.trail.extend(new_points);
+                        
+                        // Maintain maximum trail length
+                        while visuals.trail.len() > self.max_trail_length {
+                            visuals.trail.remove(0);
+                        }
                     }
-
+                
+                    // Draw trail segments
                     if visuals.trail.len() > 1 {
                         for i in 0..visuals.trail.len()-1 {
-                            let fade = i as f32 / visuals.trail.len() as f32;
+                            let fade = (i as f32 / visuals.trail.len() as f32).powf(0.5);  // Square root for more gradual fade
                             trails_to_draw.push((
                                 visuals.trail[i],
                                 visuals.trail[i+1],
